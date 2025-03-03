@@ -45,12 +45,12 @@ class ProductTelemetry:
 			logging.info(
 				'Anonymized telemetry enabled. See https://docs.browser-use.com/development/telemetry for more information.'
 			)
-			self._posthog_client = Posthog(
-				project_api_key=self.PROJECT_API_KEY,
-				host=self.HOST,
-				disable_geoip=False,
-			)
-
+			# self._posthog_client = Posthog(
+			# 	project_api_key=self.PROJECT_API_KEY,
+			# 	host=self.HOST,
+			# 	disable_geoip=False,
+			# )
+			self._posthog_client = None
 			# Silence posthog's logging
 			if not self.debug_logging:
 				posthog_logger = logging.getLogger('posthog')
