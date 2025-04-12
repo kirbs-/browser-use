@@ -499,6 +499,7 @@ class Controller(Generic[Context]):
 					# 	},
 					# 	span_type='TOOL',
 					# ):
+					logger.info(f"Executing action: {action_name} with params: {params}")
 					result = await self.registry.execute_action(
 						action_name,
 						params,
@@ -508,7 +509,7 @@ class Controller(Generic[Context]):
 						available_file_paths=available_file_paths,
 						context=context,
 					)
-
+					logger.info(f"Action Result: {result}")
 					# Laminar.set_span_output(result)
 
 					if isinstance(result, str):

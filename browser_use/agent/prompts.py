@@ -2,6 +2,7 @@ import datetime
 import importlib.resources
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
+import re
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
@@ -25,7 +26,8 @@ class SystemPrompt:
 			prompt = override_system_message
 		else:
 			self._load_prompt_template()
-			prompt = self.prompt_template.format(max_actions=self.max_actions_per_step)
+			prompt = self.prompt_template
+			# prompt = self.prompt_template.format(max_actions=self.max_actions_per_step)
 
 		if extend_system_message:
 			prompt += f'\n{extend_system_message}'
@@ -73,7 +75,12 @@ class AgentMessagePrompt:
 		self.include_attributes = include_attributes
 		self.step_info = step_info
 
-	def get_user_message(self, use_vision: bool = True) -> HumanMessage:
+	def replace_sensitive_data(self, page, secrets):
+		for k, v in secrets.items():
+			page = re.sub(f'(.*<input .*)({v})(.*/>$)', fr"\1<secret>{k}</secret>\3", page, flags=re.MULTILINE)
+		return page
+
+	def get_user_message(self, use_vision: bool = True, sensitive_data = None) -> HumanMessage:
 		elements_text = self.state.element_tree.clickable_elements_to_string(include_attributes=self.include_attributes)
 
 		has_content_above = (self.state.pixels_above or 0) > 0
@@ -99,8 +106,13 @@ class AgentMessagePrompt:
 			step_info_description = f'Current step: {self.step_info.step_number + 1}/{self.step_info.max_steps}'
 		else:
 			step_info_description = ''
+
+		 # TODO filter sensitive data parsed from screen
+		if sensitive_data:
+			elements_text = self.replace_sensitive_data(elements_text, sensitive_data)
+
 		time_str = datetime.now().strftime('%Y-%m-%d %H:%M')
-		step_info_description += f'Current date and time: {time_str}'
+		step_info_description += f'\nCurrent date and time: {time_str}'
 
 		state_description = f"""
 [Task history memory ends]

@@ -20,6 +20,10 @@ from browser_use.utils import time_execution_async, time_execution_sync
 
 Context = TypeVar('Context')
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class Registry(Generic[Context]):
 	"""Service for registering and managing actions"""
@@ -115,6 +119,8 @@ class Registry(Generic[Context]):
 			if sensitive_data:
 				validated_params = self._replace_sensitive_data(validated_params, sensitive_data)
 
+			logger.info(f"validated params: {validated_params}")
+
 			# Check if the action requires browser
 			if 'browser' in parameter_names and not browser:
 				raise ValueError(f'Action {action_name} requires browser but none provided.')
@@ -168,6 +174,8 @@ class Registry(Generic[Context]):
 
 		for key, value in params.model_dump().items():
 			params.__dict__[key] = replace_secrets(value)
+
+		# logger.info("")
 		return params
 
 	@time_execution_sync('--create_action_model')

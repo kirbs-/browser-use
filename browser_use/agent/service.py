@@ -332,6 +332,7 @@ class Agent(Generic[Context]):
 		tokens = 0
 
 		try:
+			logger.info ('#step getting browser_context state')
 			state = await self.browser_context.get_state()
 
 			await self._raise_if_stopped_or_paused()
@@ -358,7 +359,9 @@ class Agent(Generic[Context]):
 			tokens = self._message_manager.state.history.current_tokens
 
 			try:
+				logger.info("#step get_next_action starting")
 				model_output = await self.get_next_action(input_messages)
+				logger.info(f"Step model_output: {model_output}")
 
 				self.state.n_steps += 1
 
@@ -401,6 +404,7 @@ class Agent(Generic[Context]):
 			self.state.last_result = result
 
 		finally:
+			logging.info("Finally block")
 			step_end_time = time.time()
 			actions = [a.model_dump(exclude_unset=True) for a in model_output.action] if model_output else []
 			self.telemetry.capture(
@@ -493,6 +497,7 @@ class Agent(Generic[Context]):
 
 	def _convert_input_messages(self, input_messages: list[BaseMessage]) -> list[BaseMessage]:
 		"""Convert input messages to the correct format"""
+		logger.info("starting _convert_input_messages")
 		if self.model_name == 'deepseek-reasoner' or self.model_name.startswith('deepseek-r1'):
 			return convert_input_messages(input_messages, self.model_name)
 		else:
@@ -501,10 +506,12 @@ class Agent(Generic[Context]):
 	@time_execution_async('--get_next_action (agent)')
 	async def get_next_action(self, input_messages: list[BaseMessage]) -> AgentOutput:
 		"""Get next action from LLM based on current state"""
+		logging.info('starting get_next_action')
 		input_messages = self._convert_input_messages(input_messages)
-
+		logging.info('converted messages')
 		if self.tool_calling_method == 'raw':
 			output = self.llm.invoke(input_messages)
+			logger.info(f"#get_next_action output: {output}")
 			# TODO: currently invoke does not return reasoning_content, we should override invoke
 			output.content = self._remove_think_tags(str(output.content))
 			try:
@@ -517,10 +524,15 @@ class Agent(Generic[Context]):
 		elif self.tool_calling_method is None:
 			structured_llm = self.llm.with_structured_output(self.AgentOutput, include_raw=True)
 			response: dict[str, Any] = await structured_llm.ainvoke(input_messages)  # type: ignore
+			logger.info(f"#get_next_action output: {response}")
 			parsed: AgentOutput | None = response['parsed']
 		else:
+			logging.info("Structured LLM")
 			structured_llm = self.llm.with_structured_output(self.AgentOutput, include_raw=True, method=self.tool_calling_method)
+			logging.info("invoking")
+			# logging.info(f"get_next_action input_messages: {input_messages}")
 			response: dict[str, Any] = await structured_llm.ainvoke(input_messages)  # type: ignore
+			logger.info(f"#get_next_action output: {response}")
 			parsed: AgentOutput | None = response['parsed']
 
 		if parsed is None:

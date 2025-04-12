@@ -118,8 +118,6 @@ def setup_logging():
 		'playwright',
 		'urllib3',
 		'asyncio',
-		'langchain',
-		'openai',
 		'httpcore',
 		'charset_normalizer',
 		'anthropic._base_client',
@@ -129,4 +127,14 @@ def setup_logging():
 	]:
 		third_party = logging.getLogger(logger)
 		third_party.setLevel(logging.ERROR)
+		third_party.propagate = False
+
+
+	for logger in [
+		'langchain',
+		'langsmith',
+		'openai',
+	]:
+		third_party = logging.getLogger(logger)
+		third_party.setLevel(logging.DEBUG)
 		third_party.propagate = False

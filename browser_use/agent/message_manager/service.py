@@ -188,7 +188,7 @@ class MessageManager:
 		"""
 
 		# filter out sensitive data from the message
-		if self.settings.sensitive_data:
+		if self.settings.sensitive_data and type(message) == AIMessage:
 			message = self._filter_sensitive_data(message)
 
 		token_count = self._count_tokens(message)
@@ -203,6 +203,8 @@ class MessageManager:
 			if not self.settings.sensitive_data:
 				return value
 			for key, val in self.settings.sensitive_data.items():
+				# TODO convert to regex. This mangles secrets with 1-3 characters.
+				# Should check if secret value exists via regex match and check for match groups instead.
 				if not val:
 					continue
 				value = value.replace(val, f'<secret>{key}</secret>')
