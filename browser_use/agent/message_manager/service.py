@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Dict, List, Optional
 
 from langchain_core.messages import (
@@ -182,14 +183,29 @@ class MessageManager:
 
 		return msg
 
+	def replace_sensitive_data(self, page, secrets):
+		for k, v in secrets.items():
+			page = re.sub(f'(.*<input .*)({v})(.*/>$)', fr"\1<secret>{k}</secret>\3", page, flags=re.MULTILINE)
+		return page
+	
 	def _add_message_with_tokens(self, message: BaseMessage, position: int | None = None) -> None:
 		"""Add message with token count metadata
 		position: None for last, -1 for second last, etc.
 		"""
 
 		# filter out sensitive data from the message
-		if self.settings.sensitive_data and type(message) == AIMessage:
-			message = self._filter_sensitive_data(message)
+		# if self.settings.sensitive_data and type(message) == AIMessage:
+		# 	message = self._filter_sensitive_data(message)
+
+		if self.settings.sensitive_data:
+			# message.content = self.replace_sensitive_data(message.content, self.settings.sensitive_data)
+			if isinstance(message.content, str):
+				message.content = self.replace_sensitive_data(message.content, self.settings.sensitive_data)
+			elif isinstance(message.content, list):
+				for i, item in enumerate(message.content):
+					if isinstance(item, dict) and 'text' in item:
+						item['text'] = self.replace_sensitive_data(item['text'], self.settings.sensitive_data)
+						message.content[i] = item
 
 		token_count = self._count_tokens(message)
 		metadata = MessageMetadata(tokens=token_count)

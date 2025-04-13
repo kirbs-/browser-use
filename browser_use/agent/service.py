@@ -506,9 +506,9 @@ class Agent(Generic[Context]):
 	@time_execution_async('--get_next_action (agent)')
 	async def get_next_action(self, input_messages: list[BaseMessage]) -> AgentOutput:
 		"""Get next action from LLM based on current state"""
-		logging.info('starting get_next_action')
+		# logging.info('starting get_next_action')
 		input_messages = self._convert_input_messages(input_messages)
-		logging.info('converted messages')
+		# logging.info('converted messages')
 		if self.tool_calling_method == 'raw':
 			output = self.llm.invoke(input_messages)
 			logger.info(f"#get_next_action output: {output}")
@@ -527,9 +527,10 @@ class Agent(Generic[Context]):
 			logger.info(f"#get_next_action output: {response}")
 			parsed: AgentOutput | None = response['parsed']
 		else:
-			logging.info("Structured LLM")
+			# logging.info("Structured LLM")
 			structured_llm = self.llm.with_structured_output(self.AgentOutput, include_raw=True, method=self.tool_calling_method)
-			logging.info("invoking")
+			# logging.info("invoking")
+			# print(f"Messages: {input_messages}")
 			# logging.info(f"get_next_action input_messages: {input_messages}")
 			response: dict[str, Any] = await structured_llm.ainvoke(input_messages)  # type: ignore
 			logger.info(f"#get_next_action output: {response}")

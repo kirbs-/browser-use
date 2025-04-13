@@ -113,7 +113,8 @@ async def replay():
         initial_actions=initial
     )
     await agent.load_and_rerun("AgentHistory.json")
+    await browser.close()
 
 if __name__ == '__main__':
-	# asyncio.run(main(), debug=True)
-   asyncio.run(replay(), debug=True)
+	asyncio.run(main(), debug=True)
+#    asyncio.run(replay(), debug=True)
