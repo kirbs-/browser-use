@@ -73,7 +73,7 @@ class MessageManager:
 
 		tool_calls = [
 			{
-				'name': 'AgentOutput',
+				'name': 'FunctionOutput', # Changed for Gemma from AgentOutput
 				'args': {
 					'current_state': {
 						'evaluation_previous_goal': 'Success - I opend the first page',
@@ -147,7 +147,7 @@ class MessageManager:
 		"""Add model output as AI message"""
 		tool_calls = [
 			{
-				'name': 'AgentOutput',
+				'name': 'FunctionOutput', # Changed for Gemma from AgentOutput
 				'args': model_output.model_dump(mode='json', exclude_unset=True),
 				'id': str(self.state.tool_id),
 				'type': 'tool_call',
@@ -185,7 +185,8 @@ class MessageManager:
 
 	def replace_sensitive_data(self, page, secrets):
 		for k, v in secrets.items():
-			page = re.sub(f'(.*<input .*)({v})(.*/>$)', fr"\1<secret>{k}</secret>\3", page, flags=re.MULTILINE)
+			if len(v) > 2:
+				page = re.sub(f'(.*<input .*)({v})(.*/>$)', fr"\1<secret>{k}</secret>\3", page, flags=re.MULTILINE)
 		return page
 	
 	def _add_message_with_tokens(self, message: BaseMessage, position: int | None = None) -> None:

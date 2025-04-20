@@ -228,6 +228,9 @@ class Agent(Generic[Context]):
 				self.settings.message_context += f'\n\nAvailable actions: {self.available_actions}'
 			else:
 				self.settings.message_context = f'Available actions: {self.available_actions}'
+		elif self.tool_calling_method == 'prompt':
+			if self.settings.message_context:
+				self.settings.message_context += f'\n You SHOULD NOT include any other text in the response if you call a function. \n Available Functions:\n{self.available_actions}'
 		return self.settings.message_context
 
 	def _set_browser_use_version_and_source(self) -> None:
@@ -301,6 +304,8 @@ class Agent(Generic[Context]):
 				return 'function_calling'
 			elif self.chat_model_library == 'AzureChatOpenAI':
 				return 'function_calling'
+			elif 'gemma' in self.model_name:
+				return 'prompt'
 			else:
 				return None
 		else:
@@ -376,7 +381,7 @@ class Agent(Generic[Context]):
 
 				await self._raise_if_stopped_or_paused()
 
-				self._message_manager.add_model_output(model_output)
+				# self._message_manager.add_model_output(model_output)
 			except Exception as e:
 				# model call failed, remove last state message from history
 				self._message_manager._remove_last_state_message()
