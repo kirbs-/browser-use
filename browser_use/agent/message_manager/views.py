@@ -80,7 +80,7 @@ class MessageHistory(BaseModel):
 		"""Add model output as AI message"""
 		tool_calls = [
 			{
-				'name': 'FunctionOutput', # AgentOutput - Changing so Gemma 3 doesn't use this term.
+				'name': "", #'FunctionOutput', # AgentOutput - Changing so Gemma 3 doesn't use this term.
 				'args': output.model_dump(mode='json', exclude_unset=True),
 				'id': '1',
 				'type': 'tool_call',

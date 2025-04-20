@@ -381,7 +381,7 @@ class Agent(Generic[Context]):
 
 				await self._raise_if_stopped_or_paused()
 
-				# self._message_manager.add_model_output(model_output)
+				self._message_manager.add_model_output(model_output)
 			except Exception as e:
 				# model call failed, remove last state message from history
 				self._message_manager._remove_last_state_message()
