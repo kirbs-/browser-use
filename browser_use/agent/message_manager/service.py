@@ -73,7 +73,7 @@ class MessageManager:
 
 		tool_calls = [
 			{
-				'name': "", #'FunctionOutput', # Changed for Gemma from AgentOutput
+				'name': "AgentOutput", #'FunctionOutput', # Changed for Gemma from AgentOutput
 				'args': {
 					'current_state': {
 						'evaluation_previous_goal': 'Success - I opend the first page',
@@ -147,7 +147,7 @@ class MessageManager:
 		"""Add model output as AI message"""
 		tool_calls = [
 			{
-				'name': "", # 'FunctionOutput', # Changed for Gemma from AgentOutput
+				'name': "AgentOutput", # 'FunctionOutput', # Changed for Gemma from AgentOutput
 				'args': model_output.model_dump(mode='json', exclude_unset=True),
 				'id': str(self.state.tool_id),
 				'type': 'tool_call',

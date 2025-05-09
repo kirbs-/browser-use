@@ -304,7 +304,7 @@ class Agent(Generic[Context]):
 				return 'function_calling'
 			elif self.chat_model_library == 'AzureChatOpenAI':
 				return 'function_calling'
-			elif 'gemma' in self.model_name:
+			elif 'gemma' in self.model_name or 'phi' in self.model_name:
 				return 'prompt'
 			else:
 				return None
